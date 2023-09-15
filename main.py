@@ -2,22 +2,30 @@ import os
 import platform
 import pickle  # Import the pickle module
 from modules.bitcoin import BitcoinWallet
-# Define simulated files and folders
-simulated_files = [
-    "file1.txt",
-    "file2.py",
-    "file3.doc",
-    "file4.jpg",
-]
+import json
+from prompt_toolkit import prompt
 
-# Simulate the default Kali Linux folders
-simulated_folders = [
-    "Desktop",
-    "Downloads",
-    "Documents",
-    "Pictures",
-    "Music",
-]
+folder_structure = {
+    "freelance": {
+        "easy_blabla_10.txt": {
+            "spec": {
+                "inside": "Crack the password for user123.",
+                "reward": 10,
+                "type":"file"
+            }
+        },
+        "folda": {
+            "spec": {
+                "type":"folder"
+            }
+        },
+        "spec":{
+            "type":"folder"
+        }
+    }
+}
+
+current_dir = list(folder_structure.keys())[0]
 
 # Define colors for file types
 color_mapping = {
@@ -32,12 +40,67 @@ def reset_game():
     print("Game reset. Initial balance set to 1000 BTC.")
 
 
-def simulate_ls():
-    # Simulate the 'ls' command
-    for item in simulated_folders + simulated_files:
-        item_type = "folder" if item in simulated_folders else "file"
-        color = color_mapping[item_type]
-        print(f"{color}{item}\033[0m")  # Reset color to default
+
+
+def simulate_cd(args):
+    global current_dir
+
+    if args:
+        new_dir = args[0]
+
+        if new_dir == "..":
+            # Move up one level
+            current_path_parts = current_dir.split("/")
+            if len(current_path_parts) > 1:
+                current_dir = "/".join(current_path_parts[:-1])
+            else:
+                current_dir = ""
+        else:
+            current_dir_contents = folder_structure.get(current_dir, {})
+            if new_dir in current_dir_contents and current_dir_contents[new_dir]["spec"]["type"] == "folder":
+                new_path = os.path.join(current_dir, new_dir).replace("\\", "/")
+                current_dir = new_path
+            else:
+                print(f"cd: {new_dir}: No such folder")
+
+
+
+
+# Usage example:
+# simulate_ls([])  # List contents of the current directory
+# simulate_ls(["folda"])  # List contents of the 'folda' directory
+
+
+
+def simulate_ls(args):
+    current_location = folder_structure
+
+    if args and args[0] == "/":
+        current_location = folder_structure  # List the root directory
+    else:
+        # Navigate to the specified directory
+        for dir_name in current_dir.split("/"):
+            if dir_name:
+                current_location = current_location[dir_name]
+
+        # Check if there are additional arguments (e.g., "/freelance/folda")
+        if args:
+            for arg in args:
+                if arg in current_location and arg != "spec":
+                    current_location = current_location[arg]
+                else:
+                    print(f"ls: cannot access '{'/'.join(args)}': No such file or directory")
+                    return
+
+    for item, properties in current_location.items():
+        if item != "spec":
+            item_type = properties.get("spec", {}).get("type", "file")
+            color = color_mapping[item_type]
+            print(f"{color}{item}\033[0m")
+
+
+
+
 def clear_screen():
     if platform.system() == "Windows":
         os.system('cls')  # On Windows, use 'cls' to clear the screen
@@ -45,15 +108,25 @@ def clear_screen():
         os.system('clear')  # On Unix-like systems, use 'clear'
 
 def main():
+
     init_balance = 1000
     wallet = BitcoinWallet(initial_balance=init_balance)
     print("Welcome to the Kali Linux Simulation!")
     while True:
-        print("$ ", end="")  # Simulate a shell prompt
-        user_input = input()
+        user_input = prompt(f"/{current_dir} $ ")
+        command_args = user_input.split()
 
-        if user_input == "ls":
-            simulate_ls()
+        if not command_args:
+            continue
+
+        command = command_args[0]
+        args = command_args[1:]
+
+
+        if command == "ls":
+            simulate_ls(args)
+        elif command == "cd":
+            simulate_cd(args)
         elif user_input == "help":
             print("Available commands:")
             print("ls - List files and folders")
