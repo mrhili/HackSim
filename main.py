@@ -1,5 +1,6 @@
 import os
 import platform
+from modules.bitcoin import BitcoinWallet
 # Define simulated files and folders
 simulated_files = [
     "file1.txt",
@@ -36,6 +37,7 @@ def clear_screen():
         os.system('clear')  # On Unix-like systems, use 'clear'
 
 def main():
+    wallet = BitcoinWallet(initial_balance=1000)
     print("Welcome to the Kali Linux Simulation!")
     while True:
         print("$ ", end="")  # Simulate a shell prompt
@@ -49,6 +51,7 @@ def main():
             print("help - Show available commands")
             print("man <command> - Show detailed information about command")
             print("halt - Quit the shell simulation")
+            print("bitcoin - Interact with Bitcoin Blockchain")
             print("clear - Clear the screen")
         elif user_input == "clear":
             clear_screen()
@@ -80,8 +83,32 @@ def main():
                       "The 'clear' command clear the screen.\n\n"
                       "Usage:\n"
                       "  clear\n")
+            elif command == "bitcoin":
+                print("Bitcoin Command\n"
+                      "============\n"
+                      "The 'bitcoin' command to interact with bitcoin blockchain.\n\n"
+                      "Usage:\n"
+                      "  bitcoin -a ( To print youre address)\n"
+                      "  bitcoin -b ( To check youre balance)\n"
+                      "  bitcoin -s <Wallet address> -m <amount> ( To send money to an address )\n"
+                      "  bitcoin\n")
             else:
                 print(f"Command not found: {command}")
+        elif user_input.startswith("bitcoin"):
+            bitcoin_args = user_input.split(" ")
+            if len(bitcoin_args) == 1:
+                print("Invalid bitcoin command. Usage: bitcoin -a | -b | -s <address> -m <amount>")
+            elif bitcoin_args[1] == "-a":
+                print(f"Your Bitcoin Address: {wallet.get_address()}")
+            elif bitcoin_args[1] == "-b":
+                print(f"Your Bitcoin Balance: {wallet.get_balance()} BTC")
+            elif bitcoin_args[1] == "-s" and len(bitcoin_args) >= 6:
+                recipient_address = bitcoin_args[3]
+                amount = float(bitcoin_args[5])
+                result = wallet.send_bitcoins(recipient_address, amount)
+                print(result)
+            else:
+                print("Invalid bitcoin command. Usage: bitcoin -a | -b | -s <address> -m <amount>")
         elif user_input == "halt":
             print("Exiting the Kali Linux Simulation. Goodbye!")
             return  # Exiting the script with 'return' instead of 'break'
