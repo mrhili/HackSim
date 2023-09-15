@@ -1,3 +1,6 @@
+#Game
+*.pkl
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -23,6 +26,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
 
 # Installer logs
 pip-log.txt
