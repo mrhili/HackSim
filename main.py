@@ -1,5 +1,6 @@
 import os
 import platform
+import pickle  # Import the pickle module
 from modules.bitcoin import BitcoinWallet
 # Define simulated files and folders
 simulated_files = [
@@ -24,6 +25,13 @@ color_mapping = {
     "folder": "\033[0;34m",  # Blue text for folders
 }
 
+def reset_game():
+    # Delete the wallet state file to reset the game
+    if os.path.exists(WALLET_STATE_FILENAME):
+        os.remove(WALLET_STATE_FILENAME)
+    print("Game reset. Initial balance set to 1000 BTC.")
+
+
 def simulate_ls():
     # Simulate the 'ls' command
     for item in simulated_folders + simulated_files:
@@ -37,7 +45,8 @@ def clear_screen():
         os.system('clear')  # On Unix-like systems, use 'clear'
 
 def main():
-    wallet = BitcoinWallet(initial_balance=1000)
+    init_balance = 1000
+    wallet = BitcoinWallet(initial_balance=init_balance)
     print("Welcome to the Kali Linux Simulation!")
     while True:
         print("$ ", end="")  # Simulate a shell prompt
@@ -92,6 +101,12 @@ def main():
                       "  bitcoin -b ( To check youre balance)\n"
                       "  bitcoin -s <Wallet address> -m <amount> ( To send money to an address )\n"
                       "  bitcoin\n")
+            elif command == "reset":
+                print("Clear Command\n"
+                      "============\n"
+                      "The 'reset' command Reset the game progress.\n\n"
+                      "Usage:\n"
+                      "  reset\n")
             else:
                 print(f"Command not found: {command}")
         elif user_input.startswith("bitcoin"):
@@ -110,8 +125,12 @@ def main():
             else:
                 print("Invalid bitcoin command. Usage: bitcoin -a | -b | -s <address> -m <amount>")
         elif user_input == "halt":
+            wallet.save_functionality()
             print("Exiting the Kali Linux Simulation. Goodbye!")
             return  # Exiting the script with 'return' instead of 'break'
+        elif user_input == "reset":
+            wallet.rip_functionality()
+            print("Reseting Wallet state")
         else:
             print(f"Command not found: {user_input}")
 
