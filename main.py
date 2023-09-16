@@ -2,6 +2,9 @@ import os
 import platform
 import pickle  # Import the pickle module
 from modules.bitcoin import BitcoinWallet
+from modules.email import Email, EmailClient
+from modules.user import User
+from modules.userdb import UserDB
 import json
 from prompt_toolkit import prompt
 
@@ -32,6 +35,10 @@ color_mapping = {
     "file": "\033[0;37m",  # White text for files
     "folder": "\033[0;34m",  # Blue text for folders
 }
+
+def format_prompt(username, computername, path):
+    return f"┌──({username}㉿{computername})-[{path}]\n└─$ "
+
 
 def reset_game():
     # Delete the wallet state file to reset the game
@@ -98,7 +105,20 @@ def simulate_ls(args):
             color = color_mapping[item_type]
             print(f"{color}{item}\033[0m")
 
+def man_ls():
+    print("LS Command\n"
+        "============\n"
+        "The 'ls' command is used to list files and folders in the current directory.\n\n"
+        "Usage:\n"
+        "  ls\n\n"
+        "Options:\n"
+        "  None\n")
 
+def man_mutt():
+    print("Usage: mutt [OPTIONS]")
+    print("Options:")
+    print("  -a   Show your email address")
+    print("  -h   Display help message")
 
 
 def clear_screen():
@@ -109,11 +129,26 @@ def clear_screen():
 
 def main():
 
+    username = input("Choose youre username : ")
+    player = User(username, info={})
+
+    computername = input("Choose youre Computer Name : ")
+
     init_balance = 1000
     wallet = BitcoinWallet(initial_balance=init_balance)
+
+    player.add_info("bitcoin_address", wallet.get_address())
+
+    userdb = UserDB()
+    userdb.add_user(player)
+
+    myMails = EmailClient(username = username)
+
+    userdb.update_user(username, "email",myMails.address)
+
     print("Welcome to the Kali Linux Simulation!")
     while True:
-        user_input = prompt(f"/{current_dir} $ ")
+        user_input = prompt(format_prompt(username,computername,current_dir))
         command_args = user_input.split()
 
         if not command_args:
@@ -121,7 +156,6 @@ def main():
 
         command = command_args[0]
         args = command_args[1:]
-
 
         if command == "ls":
             simulate_ls(args)
@@ -134,19 +168,57 @@ def main():
             print("man <command> - Show detailed information about command")
             print("halt - Quit the shell simulation")
             print("bitcoin - Interact with Bitcoin Blockchain")
+            print("mutt - Mail Interface")
+            print("whoami - Fetch username")
             print("clear - Clear the screen")
         elif user_input == "clear":
             clear_screen()
+        
+        elif user_input.startswith("bitcoin"):
+            bitcoin_args = user_input.split(" ")
+            if len(bitcoin_args) == 1:
+                print("Invalid bitcoin command. Usage: bitcoin -a | -b | -s <address> -m <amount>")
+            elif bitcoin_args[1] == "-a":
+                print(f"Your Bitcoin Address: {wallet.get_address()}")
+            elif bitcoin_args[1] == "-b":
+                print(f"Your Bitcoin Balance: {wallet.get_balance()} BTC")
+            elif bitcoin_args[1] == "-s" and len(bitcoin_args) >= 6:
+                recipient_address = bitcoin_args[3]
+                amount = float(bitcoin_args[5])
+                result = wallet.send_bitcoins(recipient_address, amount)
+                print(result)
+            else:
+                print("Invalid bitcoin command. Usage: bitcoin -a | -b | -s <address> -m <amount>")
+        elif user_input == "halt":
+            wallet.save_functionality()
+            print("Exiting the Kali Linux Simulation. Goodbye!")
+            return  # Exiting the script with 'return' instead of 'break'
+        elif user_input == "reset":
+            wallet.rip_functionality()
+            print("Reseting Wallet state")
+        elif user_input == "whoami":
+            print(username)
+        elif user_input.startswith('mutt'):
+            # Split the user input into command and options
+            parts = user_input.split()
+            if len(parts) == 1:
+                man_mutt()
+            elif len(parts) == 2:
+                option = parts[1]
+                if option == '-a':
+                    # Simulate checking the email address
+                    print(f"Your email address is: {myMails.address}")
+                elif option == '-h':
+                    # Display help
+                    man_mutt()
+                else:
+                    print("Unrecognized option. Use 'mutt -h' for help.")
+            else:
+                print("Invalid command. Use 'mutt -h' for help.")
         elif user_input.startswith("man "):
             command = user_input.split(" ")[1]
             if command == "ls":
-                print("LS Command\n"
-                      "============\n"
-                      "The 'ls' command is used to list files and folders in the current directory.\n\n"
-                      "Usage:\n"
-                      "  ls\n\n"
-                      "Options:\n"
-                      "  None\n")
+                man_ls()
             elif command == "help":
                 print("HELP Command\n"
                       "============\n"
@@ -180,30 +252,12 @@ def main():
                       "The 'reset' command Reset the game progress.\n\n"
                       "Usage:\n"
                       "  reset\n")
+            elif command == "mutt":
+                man_mutt()
+            elif command == "whoami":
+                print("Fetch username")
             else:
-                print(f"Command not found: {command}")
-        elif user_input.startswith("bitcoin"):
-            bitcoin_args = user_input.split(" ")
-            if len(bitcoin_args) == 1:
-                print("Invalid bitcoin command. Usage: bitcoin -a | -b | -s <address> -m <amount>")
-            elif bitcoin_args[1] == "-a":
-                print(f"Your Bitcoin Address: {wallet.get_address()}")
-            elif bitcoin_args[1] == "-b":
-                print(f"Your Bitcoin Balance: {wallet.get_balance()} BTC")
-            elif bitcoin_args[1] == "-s" and len(bitcoin_args) >= 6:
-                recipient_address = bitcoin_args[3]
-                amount = float(bitcoin_args[5])
-                result = wallet.send_bitcoins(recipient_address, amount)
-                print(result)
-            else:
-                print("Invalid bitcoin command. Usage: bitcoin -a | -b | -s <address> -m <amount>")
-        elif user_input == "halt":
-            wallet.save_functionality()
-            print("Exiting the Kali Linux Simulation. Goodbye!")
-            return  # Exiting the script with 'return' instead of 'break'
-        elif user_input == "reset":
-            wallet.rip_functionality()
-            print("Reseting Wallet state")
+                print(f"No manual for : {command}")
         else:
             print(f"Command not found: {user_input}")
 
