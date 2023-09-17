@@ -1,0 +1,6 @@
+setup(
+    name="YourProjectName",
+    # ...
+    license="GPL-3.0",
+    # ...
+)

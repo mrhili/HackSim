@@ -1,69 +1,93 @@
+# This file is part of YourProjectName.
+#
+# HackSim is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License.
+#
+# HackSim is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+
 import random
 import string
+from .rand import generate_random_email_address
+from tabulate import tabulate
 
 class Email:
-    def __init__(self, sender, recipient, subject, message):
+    def __init__(self, sender, recipient, subject, message, reference=None):
         self.sender = sender
         self.recipient = recipient
         self.subject = subject
         self.message = message
+        self.reference = None
+        if reference:
+            self.s=reference = reference
 
 class EmailClient:
     def __init__(self, username):
         self.inbox = []
+        self.outbox = []
         self.username = username
-        self.address = self.generate_random_email(self.username)
+        self.address = generate_random_email_address(self.username)
+
+    def send_email(self, receiver, subject="", message=""):
+
+        email = Email(self.username, receiver.username, subject, message)
+
+        receiver.receive_email(self, email)
+
+    def receive_email(self, sender, email):
+
+        self.inbox.append({"sender":email.sender,"subject":email.subject,"message":email.message})
+
+    # def respond_to_email(self, email, message):
+    #     reply = {
+    #         "from": self.username,
+    #         "to": email["from"],
+    #         "subject": f"Re: {email['subject']}",
+    #         "message": message,
+    #     }
+    #     recipient_email_client = self.userdb.get_user(email["from"]).get_info("email_client")
+    #     if recipient_email_client:
+    #         recipient_email_client.receive_email(reply)
+    #     else:
+    #         self.userdb.get_user(email["from"]).inbox.append(reply)
+
+    
+    def check_inbox(self):
+        if not self.inbox:
+            print("Inbox is empty.")
+            return
+
+        inbox_data = []
+
+        
+        for i, email in enumerate(self.inbox[::-1]):
+            # print(f"Email {i+1}:")
+            # print(f"From: {email['sender']}")
+            # #print(f"To: {email['recipient']}")
+            # print(f"Subject: {email['subject']}")
+            # print(f"Message: {email['message']}")
+            # print("-" * 40)
+
+            inbox_data.append([
+                f"Email {len(self.inbox) - self.inbox.index(email)}",
+                email["sender"],
+                email["subject"],
+                email["message"]
+            ])
+
+            print("Inbox:")
+        table = tabulate(inbox_data, headers=["Email #", "From", "Subject", "Message"], tablefmt="pretty")
+        print(table)
 
 
-    def generate_random_email(self, username):
-        # List of common email domains
-        domains = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "aol.com", "icloud.com"]
 
-        # Modify the username slightly (e.g., add random characters)
-        modified_username = username + "".join(random.choices("0123456789", k=3))
 
-        # Randomly select an email domain
-        domain = random.choice(domains)
 
-        # Create the email address
-        email = f"{modified_username}@{domain}"
 
-        return email
-#     def generate_random_email(self):
-#         sender = random.choice(self.users)
-#         recipient = random.choice(self.users)
-#         subject = ''.join(random.choice(string.ascii_letters) for _ in range(10))
-#         message = ''.join(random.choice(string.ascii_letters + ' ') for _ in range(50))
-#         return Email(sender.email, recipient.email, subject, message)
 
-#     def send_random_emails(self, num_emails):
-#         for _ in range(num_emails):
-#             email = self.generate_random_email()
-#             self.inbox.append(email)
 
-#     def check_inbox(self):
-#         if not self.inbox:
-#             print("Inbox is empty.")
-#         else:
-#             print("Inbox:")
-#             for index, email in enumerate(self.inbox, start=1):
-#                 print(f"{index}. From: {email.sender}, Subject: {email.subject}")
 
-#     def read_email(self, index):
-#         if 1 <= index <= len(self.inbox):
-#             email = self.inbox[index - 1]
-#             print(f"From: {email.sender}")
-#             print(f"To: {email.recipient}")
-#             print(f"Subject: {email.subject}")
-#             print(f"Message: {email.message}")
-#         else:
-#             print("Invalid email index.")
-
-# # Create a list of random users
-# users = [User('user1', 'example.com'), User('user2', 'example.com'), User('user3', 'example.com')]
-
-# # Example usage:
-# email_client = EmailClient(users)
-# email_client.send_random_emails(5)
-# email_client.check_inbox()
-# email_client.read_email(1)

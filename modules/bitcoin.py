@@ -1,7 +1,20 @@
+# This file is part of YourProjectName.
+#
+# HackSim is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License.
+#
+# HackSim is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+
 import random
 import string
 import pickle  # Import the pickle module
 import os
+from .rand import generate_simulated_bitcoin_address
 WALLET_STATE_FILENAME = "wallet_state.pkl"
 class BitcoinWallet:
     def __init__(self, initial_balance=0):
@@ -19,7 +32,7 @@ class BitcoinWallet:
 
         else:
             self.balance = self.initial_balance
-            self.address = self.generate_simulated_bitcoin_address()
+            self.address = generate_simulated_bitcoin_address()
             self.save_functionality()
 
     def save_functionality(self):
@@ -54,12 +67,3 @@ class BitcoinWallet:
             return "Insufficient balance (simulated)"
 
     
-    def generate_simulated_bitcoin_address(self):
-        # Define the length of the simulated address (typically 26-35 characters)
-        address_length = random.randint(26, 35)
-        
-        # Generate a random address using uppercase letters and digits
-        characters = string.ascii_uppercase + string.digits
-        simulated_address = ''.join(random.choice(characters) for _ in range(address_length))
-        
-        return simulated_address

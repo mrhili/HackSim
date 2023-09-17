@@ -1,3 +1,16 @@
+# This file is part of YourProjectName.
+#
+# HackSim is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License.
+#
+# HackSim is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+
+
 import os
 import platform
 import pickle  # Import the pickle module
@@ -7,6 +20,8 @@ from modules.user import User
 from modules.userdb import UserDB
 import json
 from prompt_toolkit import prompt
+
+#from .rand import generate_username
 
 folder_structure = {
     "freelance": {
@@ -119,6 +134,7 @@ def man_mutt():
     print("Options:")
     print("  -a   Show your email address")
     print("  -h   Display help message")
+    print("  -i   Check Inbox")
 
 
 def clear_screen():
@@ -129,6 +145,11 @@ def clear_screen():
 
 def main():
 
+    ##################################################
+    #                                                #
+    #              Main Character info                
+    #                                                #
+    ##################################################
     username = input("Choose youre username : ")
     player = User(username, info={})
 
@@ -146,6 +167,37 @@ def main():
 
     userdb.update_user(username, "email",myMails.address)
 
+    
+
+    ##################################################
+    #                                                #
+    #              Evil twin                
+    #                                                #
+    ##################################################
+    evil_twin_u = "Evil_twin"
+    evil_twin = User(evil_twin_u, info={})
+
+    userdb.add_user(evil_twin)
+
+    evil_twin_mail = EmailClient(username = evil_twin_u)
+
+    userdb.update_user(username, evil_twin_u,evil_twin_mail.address)
+
+
+    ##################################################
+    #                                                #
+    #              Evil Actions                
+    #                                                #
+    ##################################################
+
+    evil_twin_mail.send_email( myMails, "I will kill you","If you dont hand me 10 BTC")
+
+    
+    ##################################################
+    #                                                #
+    #              Start application                
+    #                                                #
+    ##################################################
     print("Welcome to the Kali Linux Simulation!")
     while True:
         user_input = prompt(format_prompt(username,computername,current_dir))
@@ -208,6 +260,8 @@ def main():
                 if option == '-a':
                     # Simulate checking the email address
                     print(f"Your email address is: {myMails.address}")
+                if option == '-i':
+                    myMails.check_inbox()
                 elif option == '-h':
                     # Display help
                     man_mutt()

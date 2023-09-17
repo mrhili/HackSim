@@ -1,4 +1,5 @@
 myenv/
+trash.py
 #Game
 *.pkl
 
