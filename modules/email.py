@@ -21,9 +21,18 @@ class Email:
         self.recipient = recipient
         self.subject = subject
         self.message = message
-        self.reference = None
-        if reference:
-            self.s=reference = reference
+        self.reference = reference
+
+    def __str__(self):
+        email_str = f"From: {self.sender}\n"
+        email_str += f"To: {self.recipient}\n"
+        email_str += f"Subject: {self.subject}\n"
+        email_str += f"Message:\n{self.message}\n"
+
+        if self.reference:
+            email_str += f"Reference: {self.reference}\n"
+
+        return email_str
 
 class EmailClient:
     def __init__(self, username):
@@ -34,27 +43,34 @@ class EmailClient:
 
     def send_email(self, receiver, subject="", message=""):
 
-        email = Email(self.username, receiver.username, subject, message)
+        email = Email(self.address, receiver.address, subject, message)
+
+        self.inbox.append({"recipient":email.recipient,"subject":email.subject,"message":email.message, "reference": None})
 
         receiver.receive_email(self, email)
 
     def receive_email(self, sender, email):
 
-        self.inbox.append({"sender":email.sender,"subject":email.subject,"message":email.message})
+        self.inbox.append({"sender":sender.address,"subject":email.subject,"message":email.message, "reference": None})
 
-    # def respond_to_email(self, email, message):
-    #     reply = {
-    #         "from": self.username,
-    #         "to": email["from"],
-    #         "subject": f"Re: {email['subject']}",
-    #         "message": message,
-    #     }
-    #     recipient_email_client = self.userdb.get_user(email["from"]).get_info("email_client")
-    #     if recipient_email_client:
-    #         recipient_email_client.receive_email(reply)
-    #     else:
-    #         self.userdb.get_user(email["from"]).inbox.append(reply)
+    def respond_to_email(self, index, subject="", message=""):
 
+        ref_email = self.inbox[index]
+
+        if ref_email:
+
+            receiver_address = ref_email["sender"]
+
+            reference = ref_email
+
+            email = Email(self.address, receiver.address, subject, message, reference)
+
+            self.inbox.append({"recipient":email.recipient,"subject":email.subject,"message":email.message, "reference": reference})
+
+            receiver.receive_email(self, email)
+        else:
+            print("Error in refencing email to respond on")
+        
     
     def check_inbox(self):
         if not self.inbox:
@@ -65,22 +81,17 @@ class EmailClient:
 
         
         for i, email in enumerate(self.inbox[::-1]):
-            # print(f"Email {i+1}:")
-            # print(f"From: {email['sender']}")
-            # #print(f"To: {email['recipient']}")
-            # print(f"Subject: {email['subject']}")
-            # print(f"Message: {email['message']}")
-            # print("-" * 40)
 
             inbox_data.append([
                 f"Email {len(self.inbox) - self.inbox.index(email)}",
                 email["sender"],
                 email["subject"],
-                email["message"]
+                email["message"],
+                str(email) if email["reference"] else "No reference"
             ])
 
             print("Inbox:")
-        table = tabulate(inbox_data, headers=["Email #", "From", "Subject", "Message"], tablefmt="pretty")
+        table = tabulate(inbox_data, headers=["Email #", "From", "Subject", "Message", "Reference Email"], tablefmt="pretty")
         print(table)
 
 
