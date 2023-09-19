@@ -26,7 +26,7 @@ from modules.smtp import EmailClientManager
 #from .rand import generate_username
 
 folder_structure = {
-    "freelance": {
+    "root": {
         "easy_blabla_10.txt": {
             "spec": {
                 "inside": "Crack the password for user123.",
@@ -45,7 +45,7 @@ folder_structure = {
     }
 }
 
-current_dir = "/"+list(folder_structure.keys())[0]
+current_dir = list(folder_structure.keys())[0]
 
 # Define colors for file types
 color_mapping = {
@@ -65,7 +65,6 @@ def reset_game():
 
 
 
-
 def simulate_cd(args):
     global current_dir
 
@@ -78,15 +77,23 @@ def simulate_cd(args):
             if len(current_path_parts) > 1:
                 current_dir = "/".join(current_path_parts[:-1])
             else:
-                current_dir = ""
+                print("cd: Cannot move above the root directory.")
         else:
-            current_dir_contents = folder_structure.get(current_dir, {})
-            if new_dir in current_dir_contents and current_dir_contents[new_dir]["spec"]["type"] == "folder":
-                new_path = os.path.join(current_dir, new_dir).replace("\\", "/")
-                current_dir = new_path
-            else:
-                print(f"cd: {new_dir}: No such folder")
+            current_path_parts = current_dir.split("/")
+            current_dir_contents = folder_structure
+            for part in current_path_parts:
+                if part in current_dir_contents:
+                    current_dir_contents = current_dir_contents[part]
+                else:
+                    print(f"cd: {current_dir}/{new_dir}: No such folder")
+                    return
 
+            if new_dir in current_dir_contents and current_dir_contents[new_dir]["spec"]["type"] == "folder":
+                current_dir = os.path.join(current_dir, new_dir).replace("\\", "/")
+            else:
+                print(f"cd: {current_dir}/{new_dir}: No such folder")
+    else:
+        print("cd: Missing argument. Usage: cd <directory>")
 
 
 
@@ -214,7 +221,7 @@ def main():
     #myMails.respond_to_email( 1,userdb,emailClientManager, "subject", "message")
 
     while True:
-        user_input = prompt(format_prompt(username,computername,current_dir))
+        user_input = prompt(format_prompt(username,computername,"/"+current_dir))
         command_args = user_input.split()
 
         if not command_args:
