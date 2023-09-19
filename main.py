@@ -21,6 +21,8 @@ from modules.userdb import UserDB
 import json
 from prompt_toolkit import prompt
 
+from modules.smtp import EmailClientManager
+
 #from .rand import generate_username
 
 folder_structure = {
@@ -43,7 +45,7 @@ folder_structure = {
     }
 }
 
-current_dir = list(folder_structure.keys())[0]
+current_dir = "/"+list(folder_structure.keys())[0]
 
 # Define colors for file types
 color_mapping = {
@@ -132,9 +134,11 @@ def man_ls():
 def man_mutt():
     print("Usage: mutt [OPTIONS]")
     print("Options:")
+    print("  -s   Start the interactive application")
     print("  -a   Show your email address")
     print("  -h   Display help message")
     print("  -i   Check Inbox")
+    print("  -o   Check Sent Messages")
 
 
 def clear_screen():
@@ -163,7 +167,11 @@ def main():
     userdb = UserDB()
     userdb.add_user(player)
 
+
     myMails = EmailClient(username = username)
+
+    emailClientManager = EmailClientManager()
+    emailClientManager.add_client(username, myMails)
 
     userdb.update_user(username, "email",myMails.address)
 
@@ -181,9 +189,11 @@ def main():
 
     evil_twin_mail = EmailClient(username = evil_twin_u)
 
-    userdb.update_user(username, evil_twin_u,evil_twin_mail.address)
+    emailClientManager.add_client(username, evil_twin_mail)
 
+    userdb.update_user(evil_twin_u, "email",evil_twin_mail.address)
 
+    #print( userdb)
     ##################################################
     #                                                #
     #              Evil Actions                
@@ -198,7 +208,11 @@ def main():
     #              Start application                
     #                                                #
     ##################################################
+    
     print("Welcome to the Kali Linux Simulation!")
+
+    #myMails.respond_to_email( 1,userdb,emailClientManager, "subject", "message")
+
     while True:
         user_input = prompt(format_prompt(username,computername,current_dir))
         command_args = user_input.split()
@@ -262,9 +276,68 @@ def main():
                     print(f"Your email address is: {myMails.address}")
                 if option == '-i':
                     myMails.check_inbox()
+                if option == '-o':
+                    myMails.check_outbox()
                 elif option == '-h':
                     # Display help
                     man_mutt()
+                elif option == '-s':
+                    # Start the application
+                    while True:  # Loop for the mutt app
+                        mutt_input = input("Mutt $ ")  # Prompt the user for mutt commands
+                        if mutt_input == 'send':
+
+                            while True: 
+                                # Handle sending an email
+                                # ...
+                                receiver = input("Mutt $ receiver email : ")
+                                subject = input("Mutt $ subject :")
+                                message = input("Mutt $ message :")
+                                joint = input("Mutt $ file joint path : ")
+
+                                #TODO print message :
+                                confirm = input("Mutt $ Confirm? y/n : ")
+                                if confirm == "y":
+                                    myMails.send_email( receiver, subject, message)
+                                
+                                xquit = input("Mutt $ Send another? y/n : ")
+                                if xquit == "n":
+                                    break
+                        elif mutt_input == 'reply':
+
+                            while True: 
+                                # Handle sending an email
+                                # ...
+                                receiver_index = int(input("Mutt $ email index : "))
+                                #TODO print message found from index :
+                                subject = input("Mutt $ subject : ")
+                                message = input("Mutt $ message : ")
+                                joint = input("Mutt $ file joint path : ")
+
+                                #TODO print message :
+                                confirm = input("Mutt $ Confirm? y/n : ")
+                                if confirm == "y":
+                                    
+                                    myMails.respond_to_email( receiver_index,userdb, subject, message)
+                                    
+                                
+                                xquit = input("Mutt $ Send another? y/n : ")
+                                if xquit == "n":
+                                    break
+
+                        elif mutt_input == 'inbox':
+                            # Handle checking the inbox
+                            # ...
+                            myMails.check_inbox()
+                        elif mutt_input == 'sent':
+                            # Handle checking the inbox
+                            # ...
+                            myMails.check_outbox()
+                        elif mutt_input == 'exit':
+                            print("Exiting mutt.")
+                            break  # Exit the mutt loop and return to the main prompt
+                        else:
+                            print("Invalid mutt command. Use 'send', 'inbox', 'sent' or 'exit'.")
                 else:
                     print("Unrecognized option. Use 'mutt -h' for help.")
             else:

@@ -10,6 +10,9 @@
 # GNU General Public License for more details.
 #
 
+import pdb; 
+
+
 class UserDB:
     def __init__(self):
         self.users = {}
@@ -26,3 +29,20 @@ class UserDB:
             user.add_info(key, value)
         else:
             print(f"User '{username}' not found in the database.")
+
+    def get_user_by_info(self, info_key, info_value):
+
+        
+        
+        for username, user in self.users.items():
+            #print(user.info.get(info_key))
+            if user.info.get(info_key) == info_value:
+                #pdb.set_trace()
+                return user  # Return the user object
+        return None
+    def __str__(self):
+        user_db_str = "User Database:\n"
+        for username, user in self.users.items():
+            user_db_str += f"Username: {username}\n"
+            user_db_str += f"Info: {user.info}\n"
+        return user_db_str

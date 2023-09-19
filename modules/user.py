@@ -20,3 +20,6 @@ class User:
 
     def get_info(self, key):
         return self.info.get(key)
+
+
+    

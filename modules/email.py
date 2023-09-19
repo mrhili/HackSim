@@ -12,8 +12,11 @@
 
 import random
 import string
+from .userdb import UserDB
 from .rand import generate_random_email_address
 from tabulate import tabulate
+
+#import pdb; pdb.set_trace()
 
 class Email:
     def __init__(self, sender, recipient, subject, message, reference=None):
@@ -45,7 +48,7 @@ class EmailClient:
 
         email = Email(self.address, receiver.address, subject, message)
 
-        self.inbox.append({"recipient":email.recipient,"subject":email.subject,"message":email.message, "reference": None})
+        self.outbox.append({"recipient":email.recipient,"subject":email.subject,"message":email.message, "reference": None})
 
         receiver.receive_email(self, email)
 
@@ -53,9 +56,11 @@ class EmailClient:
 
         self.inbox.append({"sender":sender.address,"subject":email.subject,"message":email.message, "reference": None})
 
-    def respond_to_email(self, index, subject="", message=""):
+    def respond_to_email(self, index,userdb,  emailClientManager, subject="", message=""):
 
-        ref_email = self.inbox[index]
+        ref_email = self.inbox[index-1]
+
+        
 
         if ref_email:
 
@@ -63,11 +68,22 @@ class EmailClient:
 
             reference = ref_email
 
-            email = Email(self.address, receiver.address, subject, message, reference)
+            email = Email(self.address, receiver_address, subject, message, reference)
 
-            self.inbox.append({"recipient":email.recipient,"subject":email.subject,"message":email.message, "reference": reference})
+            self.outbox.append({"recipient":email.recipient,"subject":email.subject,"message":email.message, "reference": reference})
 
-            receiver.receive_email(self, email)
+            #search user by email
+
+            receiver = userdb.get_user_by_info("email", receiver_address)
+            #print(receiver)
+            # receiverClient = emailClientManager.get_client(receiver.get_info("username"))
+            # print(receiver_address)
+            # if receiver and receiverClient:
+            #     receiverClient.receive_email(self, email)
+            # else:
+            #     print("Error in the copmuter bring a technicien")
+
+            
         else:
             print("Error in refencing email to respond on")
         
@@ -78,6 +94,8 @@ class EmailClient:
             return
 
         inbox_data = []
+
+        
 
         
         for i, email in enumerate(self.inbox[::-1]):
@@ -92,6 +110,30 @@ class EmailClient:
 
             print("Inbox:")
         table = tabulate(inbox_data, headers=["Email #", "From", "Subject", "Message", "Reference Email"], tablefmt="pretty")
+        print(table)
+
+    def check_outbox(self):
+        if not bool(self.outbox):
+            print("No message Sent.")
+            return
+
+        
+
+        outbox_data = []
+
+        
+        for i, email in enumerate(self.outbox[::-1]):
+
+            outbox_data.append([
+                f"Email {len(self.outbox) - self.outbox.index(email)}",
+                email["recipient"],
+                email["subject"],
+                email["message"],
+                email["reference"]["message"] if email else "No reference"
+            ])
+
+            print("OutBox:")
+        table = tabulate(outbox_data, headers=["Email #", "To", "Subject", "Message", "Reference Email"], tablefmt="pretty")
         print(table)
 
 
