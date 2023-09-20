@@ -26,6 +26,9 @@ import base64
 
 #from .rand import generate_username
 
+missions = {"mission1" : False,
+}
+
 # Load mission data from JSON file
 mission1_file_path = "modules/missions/mission1.json"
 with open(mission1_file_path, "r") as mission1_file:
@@ -33,6 +36,7 @@ with open(mission1_file_path, "r") as mission1_file:
 
 def mission1Check(reply_index, solution):
     if mission1_data["solution"] == solution and reply_index == 1:
+        missions["mission1"] = True
         print("Mission1 Solved Success")
         print("There is just one mission and you solveit it")
         print('''\n
@@ -358,7 +362,10 @@ def main():
                                 confirm = input("Mutt $ Confirm? y/n : ")
                                 if confirm == "y":
 
-                                    mission1Check(receiver_index, message)
+
+                                    if not missions["mission1"]:
+
+                                        mission1Check(receiver_index, message)
                                     
                                     myMails.respond_to_email( receiver_index,userdb, subject, message)
                                     
