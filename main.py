@@ -22,8 +22,29 @@ import json
 from prompt_toolkit import prompt
 
 from modules.smtp import EmailClientManager
+import base64
 
 #from .rand import generate_username
+
+# Load mission data from JSON file
+mission1_file_path = "modules/missions/mission1.json"
+with open(mission1_file_path, "r") as mission1_file:
+    mission1_data = json.load(mission1_file)
+
+def mission1Check(reply_index, solution):
+    if mission1_data["solution"] == solution and reply_index == 1:
+        print("Mission1 Solved Success")
+        print("There is just one mission and you solveit it")
+        print('''\n
+         __    __  ____  ____  
+        |  T__T  Tl    j|    \ 
+        |  |  |  | |  T |  _  Y
+        |  |  |  | |  | |  |  |
+        l  `  '  ! |  | |  |  |
+        .\      /  j  l |  |  |
+        ..\_/\_/  |____jl__j__j
+        ''')
+
 
 folder_structure = {
     "root": {
@@ -147,6 +168,12 @@ def man_mutt():
     print("  -i   Check Inbox")
     print("  -o   Check Sent Messages")
 
+def simulate_base64_decryptor(args):
+    decoded_bytes = base64.b64decode(args[0])
+    decoded_string = decoded_bytes.decode('utf-8')
+    print(decoded_string)
+def man_base64_decryptor():
+    print("Usage: base64_decryptor [string]")
 
 def clear_screen():
     if platform.system() == "Windows":
@@ -207,7 +234,9 @@ def main():
     #                                                #
     ##################################################
 
-    evil_twin_mail.send_email( myMails, "I will kill you","If you dont hand me 10 BTC")
+
+
+    evil_twin_mail.send_email( myMails, mission1_data["mission_description"],mission1_data["problem"])
 
     
     ##################################################
@@ -242,6 +271,7 @@ def main():
             print("halt - Quit the shell simulation")
             print("bitcoin - Interact with Bitcoin Blockchain")
             print("mutt - Mail Interface")
+            print("base64_decryptor - Decrypt Base64 Strings")
             print("whoami - Fetch username")
             print("clear - Clear the screen")
         elif user_input == "clear":
@@ -266,6 +296,9 @@ def main():
             wallet.save_functionality()
             print("Exiting the Kali Linux Simulation. Goodbye!")
             return  # Exiting the script with 'return' instead of 'break'
+
+        elif user_input.startswith("base64_decryptor"):
+            simulate_base64_decryptor(args)
         elif user_input == "reset":
             wallet.rip_functionality()
             print("Reseting Wallet state")
@@ -324,6 +357,8 @@ def main():
                                 #TODO print message :
                                 confirm = input("Mutt $ Confirm? y/n : ")
                                 if confirm == "y":
+
+                                    mission1Check(receiver_index, message)
                                     
                                     myMails.respond_to_email( receiver_index,userdb, subject, message)
                                     
@@ -344,7 +379,7 @@ def main():
                             print("Exiting mutt.")
                             break  # Exit the mutt loop and return to the main prompt
                         else:
-                            print("Invalid mutt command. Use 'send', 'inbox', 'sent' or 'exit'.")
+                            print("Invalid mutt command. Use 'send', 'inbox', 'sent','reply' or 'exit'.")
                 else:
                     print("Unrecognized option. Use 'mutt -h' for help.")
             else:
@@ -388,6 +423,8 @@ def main():
                       "  reset\n")
             elif command == "mutt":
                 man_mutt()
+            elif command == "base64_decryptor":
+                man_base64_decryptor()
             elif command == "whoami":
                 print("Fetch username")
             else:
