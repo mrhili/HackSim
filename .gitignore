@@ -2,6 +2,13 @@ myenv/
 trash.py
 #Game
 *.pkl
+*.db
+*.log
+package-lock.json
+package.json
+node_modules/
+settings.json
+.vscode/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
