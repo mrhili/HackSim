@@ -56,7 +56,7 @@ class BitcoinWallet:
     def get_address(self):
         return "Your Bitcoin Address "+self.address
 
-    def send_bitcoins(self, recipient_address, amount):
+    def send_bitcoins(self, recipient_address, amount, blockchain):
         if amount <= 0:
             return "Invalid amount."
 

@@ -26,7 +26,8 @@ import base64
 
 #from .rand import generate_username
 
-missions = {"mission1" : False,
+missions = {
+    "mission1" : False,
 }
 
 # Load mission data from JSON file
@@ -34,20 +35,7 @@ mission1_file_path = "modules/missions/mission1.json"
 with open(mission1_file_path, "r") as mission1_file:
     mission1_data = json.load(mission1_file)
 
-def mission1Check(reply_index, solution):
-    if mission1_data["solution"] == solution and reply_index == 1:
-        missions["mission1"] = True
-        print("Mission1 Solved Success")
-        print("There is just one mission and you solveit it")
-        print('''\n
-         __    __  ____  ____  
-        |  T__T  Tl    j|    \ 
-        |  |  |  | |  T |  _  Y
-        |  |  |  | |  | |  |  |
-        l  `  '  ! |  | |  |  |
-        .\      /  j  l |  |  |
-        ..\_/\_/  |____jl__j__j
-        ''')
+
 
 
 folder_structure = {
@@ -438,6 +426,31 @@ def main():
                 print(f"No manual for : {command}")
         else:
             print(f"Command not found: {user_input}")
+
+
+
+##################################################
+#                                                #
+#              Misssions CHECK                
+#                                                #
+##################################################
+
+
+def mission1Check(reply_index, solution):
+    if mission1_data["solution"] == solution and reply_index == 1:
+        missions["mission1"] = True
+        print("Mission1 Solved Success")
+        print("There is just one mission and you solveit it")
+        print('''\n
+         __    __  ____  ____  
+        |  T__T  Tl    j|    \ 
+        |  |  |  | |  T |  _  Y
+        |  |  |  | |  | |  |  |
+        l  `  '  ! |  | |  |  |
+        .\      /  j  l |  |  |
+        ..\_/\_/  |____jl__j__j
+        ''')
+
 
 if __name__ == "__main__":
     main()
